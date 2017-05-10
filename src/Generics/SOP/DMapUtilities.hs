@@ -22,7 +22,7 @@ module Generics.SOP.DMapUtilities
   , FunctorWrapTypeListOfLists
 
     -- * Types
-  , TypeListTag
+  , TypeListTag (..)
 
     -- * Conversions
     -- ** 'NP' \<-\> 'DM.DMap'
