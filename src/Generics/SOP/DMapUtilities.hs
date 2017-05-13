@@ -23,6 +23,7 @@ module Generics.SOP.DMapUtilities
 
     -- * Types
   , TypeListTag (..)
+  , makeTypeListTagNP
 
     -- * Conversions
     -- ** 'NP' \<-\> 'DM.DMap'
@@ -112,11 +113,11 @@ makeTypeListTagNP = go sList
     go SCons = TLHead :* hmap TLTail (go sList)
 
 -- these are here to allow moving functors in and out of typelists
-type family FunctorWrapTypeList (f :: * -> *) (xs :: [*]) :: [*] where
+type family FunctorWrapTypeList (f :: k1 -> k2) (xs :: [k1]) :: [k2] where
   FunctorWrapTypeList f '[] = '[]
   FunctorWrapTypeList f (x ': xs) = f x ': FunctorWrapTypeList f xs
 
-type family FunctorWrapTypeListOfLists (f :: * -> *) (xss :: [[*]]) :: [[*]] where
+type family FunctorWrapTypeListOfLists (f :: k1 -> k2) (xss :: [[k1]]) :: [[k2]] where
   FunctorWrapTypeListOfLists f '[] = '[]
   FunctorWrapTypeListOfLists f (xs ': xsTail) = FunctorWrapTypeList f xs ': FunctorWrapTypeListOfLists f xsTail
 
@@ -124,7 +125,7 @@ type family FunctorWrapTypeListOfLists (f :: * -> *) (xss :: [[*]]) :: [[*]] whe
 -- composition has been moved to the type-list.  The values in the product remain the same (up to types representing composition of the functors). E.g.,
 --
 -- > (f :.: g) 2 :* (f :.: g) 3.0 :* 'Nil :: NP (f :.: g) '[Int,Double] -> f (g 2) :* f (g 3.0) :* 'Nil :: NP f '[g Int, g Double]
-npUnCompose :: forall f g xs. SListI xs => NP (f :.: g) xs -> NP f (FunctorWrapTypeList g xs)
+npUnCompose :: forall f g (xs :: [k]). SListI xs => NP (f :.: g) xs -> NP f (FunctorWrapTypeList g xs)
 npUnCompose = go
   where
     go :: NP (f :.: g) ys -> NP f (FunctorWrapTypeList g ys)
@@ -142,7 +143,7 @@ nsOfnpUnCompose = go sList where
 -- | The inverse of 'npUnCompose'.  Given a type-list indexed product where all the types in the list are applications of the same functor,
 -- remove that functor from all the types in the list and put it in the functor parameter of the 'NP'.  The values in the product itself remain the same up
 -- to types representing composition of the functors.
-npReCompose :: forall f g xs. SListI xs => NP f (FunctorWrapTypeList g xs) -> NP (f :.: g) xs
+npReCompose :: forall f g (xs :: [k]). SListI xs => NP f (FunctorWrapTypeList g xs) -> NP (f :.: g) xs
 npReCompose = go sList
   where
     go :: forall ys. SListI ys => SList ys ->  NP f (FunctorWrapTypeList g ys) -> NP (f :.: g) ys
