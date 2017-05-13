@@ -19,6 +19,12 @@ Description: Generic (generics-sop) implementation of fan and select
 -}
 module Reflex.FanGeneric
   (
+    EventSelectorGeneric (..)
+  , selectGenericUnary
+  , fanGeneric
+  , makeTags
+  , Generic
+  , Code
   ) where
 
 import Generics.SOP ((:.:) (Comp), Code, Generic, I (I), NP (..), NS (Z), Proxy (..), SListI, SListI2,
@@ -41,9 +47,9 @@ newtype EventSelectorGeneric t xss  = EventSelectorGeneric
   }
 
 data UnaryHelper a = UnaryHelper { getUnary :: a } deriving (GHCG.Generic)
-instance Generic a => Generic (UnaryHelper a)
+instance Generic (UnaryHelper a)
 
-selectGenericUnary::(Reflex t, SListI2 xss, SListI tla, Generic a, (Code (UnaryHelper a)) ~ Constructs tla)
+selectGenericUnary::(Reflex t, SListI2 xss, SListI tla, (Code (UnaryHelper a)) ~ Constructs tla)
   => EventSelectorGeneric t xss -> TypeListTag xss tla -> Event t a
 selectGenericUnary esg  = fmap getUnary . selectGeneric esg
 
@@ -81,7 +87,6 @@ instance Generic FanExample
 
 data C = C1 Int Int | C2 Double Double deriving (GHCG.Generic)
 instance Generic C
-
 
 exampleFan :: Reflex t => EventSelectorGeneric t (Code FanExample)
 exampleFan = fanGeneric (updated $ constDyn $ FEA)
